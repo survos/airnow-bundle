@@ -1,0 +1,6 @@
+# Copy to config/packages/survos_airnow.yaml in the consuming app.
+survos_airnow:
+    api_key: '%env(AIRNOW_API_KEY)%'
+    default_zip_codes: ['20008']
+    cache_ttl: 3600 # Seconds, positive; zero is rejected to avoid caching forever.
+    timeout: 10.0 # Per attempt, including redirects; retries can extend total duration.
