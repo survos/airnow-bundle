@@ -24,6 +24,7 @@ final class ObservationTest extends TestCase
             self::assertSame('/aq/observation/current/ziplatlong/', parse_url($url, PHP_URL_PATH));
             parse_str(parse_url($url, PHP_URL_QUERY), $query);
             self::assertSame(['format' => 'application/json', 'zipcode' => '00501', 'API_KEY' => 'test'], $query);
+
             return new MockResponse(file_get_contents(__DIR__.'/fixtures/observations.json'));
         });
         $client = $this->client($http);

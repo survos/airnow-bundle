@@ -8,8 +8,8 @@ use Survos\AirNowBundle\Dto\Forecast;
 use Survos\AirNowBundle\Dto\Observation;
 use Survos\AirNowBundle\Exception\AirNowException;
 use Survos\FetchBundle\Contract\PersistentFetcherInterface;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validation;
@@ -36,6 +36,7 @@ final readonly class AirNowClient
     public function currentForecastsByZip(string $zipCode, bool $force = false): array
     {
         $this->validateZip($zipCode);
+
         return $this->request('/aq/forecast/current/', ['zipCode' => $zipCode], Forecast::class, $force);
     }
 
@@ -43,18 +44,21 @@ final readonly class AirNowClient
     public function currentObservationsByZip(string $zipCode, bool $force = false): array
     {
         $this->validateZip($zipCode);
+
         return $this->request('/aq/observation/current/ziplatlong/', ['zipcode' => $zipCode], Observation::class, $force);
     }
 
     /**
      * @template T of object
+     *
      * @param array<string, string|int|float> $query
-     * @param class-string<T> $type
+     * @param class-string<T>                 $type
+     *
      * @return list<T>
      */
     private function request(string $path, array $query, string $type, bool $force): array
     {
-        if (trim($this->apiKey) === '') {
+        if ('' === trim($this->apiKey)) {
             throw new AirNowException('Configure survos_airnow.api_key before requesting AirNow data.');
         }
         $url = 'https://www.airnowapi.org'.$path.'?'.http_build_query([
@@ -78,12 +82,13 @@ final readonly class AirNowClient
                 throw new \UnexpectedValueException();
             }
             $serializer = new Serializer([new ObjectNormalizer(propertyTypeExtractor: new ReflectionExtractor())]);
+
             return array_map(static function (mixed $row) use ($serializer, $type): object {
                 if (!$row instanceof \stdClass) {
                     throw new \UnexpectedValueException();
                 }
                 $data = (array) $row;
-                if ($type === Observation::class) {
+                if (Observation::class === $type) {
                     // Normalize the replacement API's names to our camelCase DTO contract.
                     foreach (['siteID' => 'siteId', 'nowcastAQI' => 'aqi', 'aqiCategoryName' => 'categoryName'] as $source => $target) {
                         unset($data[$target]);
@@ -93,6 +98,7 @@ final readonly class AirNowClient
                         unset($data[$source]);
                     }
                 }
+
                 return $serializer->denormalize($data, $type);
             }, $rows);
         } catch (\JsonException|\UnexpectedValueException|\Symfony\Component\Serializer\Exception\ExceptionInterface|\TypeError) {
@@ -106,7 +112,7 @@ final readonly class AirNowClient
         $violations = Validation::createValidator()->validate($zipCode, [
             new Assert\NotBlank(), new Assert\Regex('/^[0-9]{5}$/D'),
         ]);
-        if (count($violations) !== 0) {
+        if (0 !== count($violations)) {
             throw new \InvalidArgumentException('ZIP code must be a five-digit string, including leading zeros.');
         }
     }

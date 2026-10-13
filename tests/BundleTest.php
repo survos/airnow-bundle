@@ -42,8 +42,15 @@ final class AirNowTestKernel extends Kernel
         yield new SurvosAirNowBundle();
     }
 
-    public function getCacheDir(): string { return dirname(__DIR__).'/var/cache/test'; }
-    public function getLogDir(): string { return dirname(__DIR__).'/var/log'; }
+    public function getCacheDir(): string
+    {
+        return dirname(__DIR__).'/var/cache/test';
+    }
+
+    public function getLogDir(): string
+    {
+        return dirname(__DIR__).'/var/log';
+    }
 
     protected function configureContainer(ContainerConfigurator $container): void
     {

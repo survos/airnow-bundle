@@ -26,6 +26,7 @@ final class AirNowClientTest extends TestCase
             self::assertSame('/aq/forecast/current/', parse_url($url, PHP_URL_PATH));
             self::assertSame('00501', $query['zipCode']);
             self::assertSame('test&key', $query['API_KEY']);
+
             return new MockResponse(file_get_contents(__DIR__.'/fixtures/forecast.json'));
         });
         $client = $this->client($http);
